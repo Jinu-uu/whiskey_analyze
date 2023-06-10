@@ -24,8 +24,15 @@ class crawler:
         service = ChromeService(ChromeDriverManager().install())
         self.driver = ChromeDriver(service=service)
 
+    def folder_detect(self, folder_name) -> None:
+        '''해당 폴더 이름이 존재하는지, 존재하면 함수 종료, 존재하지 않으면 그 폴더 생성'''
+        if not os.path.exists('./data'):   
+            os.mkdir(folder_name)
+
     def whisky_base_crawler(self)->None:
         '''whisky base 사이트 크롤링'''
+        self.folder_detect('./data')
+        
         #먼저 whisky base 사이트의 상위 1000개 위스키 url 크롤링
         self.driver.get("https://www.whiskybase.com/whiskies/top1000")
         whiskey_top1000 = self.driver.find_elements(By.XPATH, '//tbody//tr//a[@class="clickable"]')
