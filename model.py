@@ -71,3 +71,31 @@ class model:
             return descriptor_to_return
         else:
             return None
+        
+    def subset_wine_vectors(self, list_of_varieties, wine_attribute, whiskey_df_vecs) -> list:
+        '''맛/향/바디감을 input으로 받으면 해당하는 맛/향/바디감을 [맛/향/바디감, 벡터, 최빈값]으로 반환'''
+        '''list_of_varieties - normalized_geos(와인 위치 정보 정규화한 데이터)
+            wine_attribute - aroma, bitter 등 taste
+            [이름, 300길이의 벡터, 2개 이상 중복된 단어 출력]
+            '''
+        wine_variety_vectors = []
+        for v in list_of_varieties:              #list of varieties에서 loc을 사용해서 Variety, location에 맞는 열 추출
+            one_var_only = whiskey_df_vecs.loc[(whiskey_df_vecs['name'] == v[0]) & 
+                                                    (whiskey_df_vecs['Distillery'] == v[1])]
+            if len(list(one_var_only.index)) < 1 or str(v[1][-1]) == '0':   #정보 없으면 컨티뉴
+                continue
+            else:
+                taste_vecs = list(one_var_only[wine_attribute])      #해당 taste 리스트화
+                taste_vecs = [self.avg_taste_vecs[wine_attribute] if 'numpy' not in str(type(x)) else x for x in taste_vecs]#numpy 가 아니면 avg_taste_vecs[wine_attribute], 맞으면 x
+                average_variety_vec = np.average(taste_vecs, axis=0)
+                descriptor_colname = wine_attribute + '_descriptors'
+                all_descriptors = [item for items in list(one_var_only[descriptor_colname]) for item in items]
+                word_freqs = Counter(all_descriptors)
+                most_common_words = word_freqs.most_common(50)   #최빈값 50개
+                top_n_words = [(i[0], "{:.2f}".format(i[1]/len(taste_vecs))) for i in most_common_words]  #most_common_word의 i[0]과 i[1]을 taste_vec의 길이로 나눈 값을 저장?
+                top_n_words = [i for i in top_n_words if len(i[0])>=1]     #출현 빈도 낮은거 거르기
+                wine_variety_vector = [v, average_variety_vec, top_n_words]
+                    
+                wine_variety_vectors.append(wine_variety_vector)
+                
+        return wine_variety_vectors
