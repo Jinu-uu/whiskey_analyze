@@ -1,4 +1,5 @@
 import crawler
+import mapping
 import os
 
 def crawling_skip(name) -> bool:
@@ -15,3 +16,5 @@ if __name__ == '__main__':
         crawling_process.whisky_base_crawler()
         crawling_process.raw_data_preprocessing()
         
+    mapping_process = mapping.mapping()
+    mapping_process.main()
