@@ -1,4 +1,5 @@
 import crawler
+import preprocessing
 import os
 
 def crawling_skip(name) -> bool:
@@ -14,4 +15,6 @@ if __name__ == '__main__':
         crawling_process = crawler.crawler()
         crawling_process.whisky_base_crawler()
         crawling_process.raw_data_preprocessing()
-        
+    
+    preprocessing_process = preprocessing.preprocessing()
+    whiskey_df = preprocessing_process.main()
