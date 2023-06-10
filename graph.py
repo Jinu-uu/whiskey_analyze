@@ -95,3 +95,50 @@ class graph:
         text = text[:-1]
         #출력
         ax.text(x=0, y=1, s=text, fontsize=12, color='grey')
+
+
+    def plot_whiskey_recommendations(self, data) -> None:
+        '''위스키 향, 바디감, 맛 시각화 해주는 함수'''
+        plt.figure(figsize=(self.graph_num*5, self.graph_num*2), dpi=96)
+
+        gs = gridspec.GridSpec(3, self.graph_num, height_ratios=[3, 0.5, 1]) 
+        self.whiskey_variety_vectors_normalized.iloc[:,1:-1]
+
+
+        spider_nr = 0
+        number_line_nr = self.graph_num
+        descriptor_nr = self.graph_num * 2
+
+        #랜덤 배열 생성
+        pick_whiskey = [random.randrange(0,len(self.whiskey_variety_vectors_normalized)) for x in range(self.graph_num)]
+
+        #랜덤하게 뽑은 위스키를 for문에서 시각화
+        for w in range(self.graph_num):
+            self.make_spider(gs, spider_nr, 'green', data.iloc[:,:-1], number=pick_whiskey[w])
+            self.plot_number_line(gs, number_line_nr,dot_color='red', data=data.iloc[:,1], number=pick_whiskey[w])
+            self.create_text(gs, descriptor_nr, data.iloc[:,-1], number=pick_whiskey[w])
+            spider_nr += 1
+            number_line_nr += 1
+            descriptor_nr += 1  
+        #결과 저장
+        plt.savefig('./output.png')
+
+    def normalize(self, df, cols_to_normalize) -> pd.DataFrame:
+        '''데이터프레임의 모든 값들을 0~1사이로 정규화'''
+        for feature_name in cols_to_normalize:
+            print(feature_name)
+            max_value = df[feature_name].max()
+            min_value = df[feature_name].min()
+            df[feature_name] = df[feature_name].apply(lambda x: (x- min_value)/(max_value-min_value))
+    #         (df[feature_name] - min_value) / (max_value - min_value)
+        return df
+
+    def check_in_range(self, label_range_dict, value) -> str:
+        '''value 값을 받으면 정해진 범위 내로 label encording'''
+        for label, value_range_tuple in label_range_dict.items():
+            lower_end = value_range_tuple[0]
+            upper_end = value_range_tuple[1]
+            if value >= lower_end and value <= upper_end:
+                return label
+            else:
+                continue
