@@ -99,3 +99,30 @@ class model:
                 wine_variety_vectors.append(wine_variety_vector)
                 
         return wine_variety_vectors
+
+
+    def pca_wine_variety(self, list_of_varieties, wine_attribute, whiskey_df_vecs, pca=True) -> list:
+        '''subset wine vectors 메소드 호출 후 ? pca를 통해서 위스키의 맛/향/바디감을 차원축소를 한 뒤 반환'''
+        wine_var_vectors = self.subset_wine_vectors(list_of_varieties, wine_attribute, whiskey_df_vecs)   #와인 이름, 벡터, 출현빈도 높은 단어
+        wine_varieties = [str(w[0]).replace('(', '').replace(')', '').replace("'", '').replace('"', '') for w in wine_var_vectors]  #와인 이름의 괄호, 따옴표 처리
+        wine_var_vec = [w[1] for w in wine_var_vectors]  #wine_var_vectors에서 벡터만 추출
+        if pca:             #aroma 아닐 때 차원축소 하나의 값으로만
+            pca = PCA(1)
+            wine_var_vec = pca.fit_transform(wine_var_vec)
+            wine_var_vec = pd.DataFrame(wine_var_vec, index=wine_varieties)
+        else:              #aroma일 때 그냥 Series로
+            wine_var_vec = pd.Series(wine_var_vec, index=wine_varieties)
+        wine_var_vec.sort_index(inplace=True)
+        
+        wine_descriptors = pd.DataFrame([w[2] for w in wine_var_vectors], index=wine_varieties)
+        wine_descriptors.sort_index(inplace=True)
+            
+        return wine_var_vec, wine_descriptors
+    
+    def normalize(self, df, cols_to_normalize) -> pd.DataFrame:
+        '''df 정규화'''
+        for feature_name in cols_to_normalize:
+            max_value = df[feature_name].max()
+            min_value = df[feature_name].min()
+            df[feature_name] = df[feature_name].apply(lambda x: (x- min_value)/(max_value-min_value))
+        return df
