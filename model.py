@@ -172,3 +172,25 @@ class model:
                 descriptor_mapping_filtered=descriptor_mapping.loc[descriptor_mapping['primary taste']==c]
             descriptor_mappings[c] = descriptor_mapping_filtered   
 
+
+        w2v_model_list = []
+        review_descriptors = []
+
+        #word2vec를 사용하기 위해서 trigram을 사용해 미리 전처리
+        for review in whiskey_reviews:
+            taste_descriptors = []
+            normalized_review = self.normalize_text(review)
+            phrased_review = whiskey_trigram_model[normalized_review]    #trigram 모델에 넣고 반환
+            
+            for c in core_tastes:                                                      
+                descriptors_only = [self.return_descriptor_from_mapping(descriptor_mappings[c], word, c) for word in phrased_review]
+                no_nones = [str(d).strip() for d in descriptors_only if d is not None]
+                descriptorized_review = ' '.join(no_nones)
+                taste_descriptors.append(descriptorized_review)
+            w2v_model_list.append(''.join(taste_descriptors).split(' '))
+            review_descriptors.append(taste_descriptors)
+        
+        whiskey_word2vec_model = Word2Vec(sentences=w2v_model_list, vector_size=300, min_count=8, epochs=15)
+        whiskey_word2vec_model.save('whiskey_word2vec_model.bin')
+        whiskey_word2vec_model = Word2Vec.load('whiskey_word2vec_model.bin')
+        #word2vec 모델을 만들고 저장
