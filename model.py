@@ -194,3 +194,59 @@ class model:
         whiskey_word2vec_model.save('whiskey_word2vec_model.bin')
         whiskey_word2vec_model = Word2Vec.load('whiskey_word2vec_model.bin')
         #word2vec 모델을 만들고 저장
+
+        taste_descriptors = []
+        taste_vectors = []
+
+        #어떤 단어가 가장 많이나오고, 중요한 데이터인지 tf-idf라는 기법과 학습된 w2v의 결과를 곱해서 리뷰 하나당 300크기의 벡터 생성
+        for n, taste in enumerate(core_tastes):
+            taste_words = [r[n] for r in review_descriptors]
+            
+            vectorizer = TfidfVectorizer()
+            X = vectorizer.fit(taste_words)
+            dict_of_tfidf_weightings = dict(zip(X.get_feature_names_out(), X.idf_))
+            whiskey_review_descriptors = []
+            whiskey_review_vectors = []
+            
+            for d in taste_words:
+                descriptor_count = 0
+                weighted_review_terms = []
+                terms = d.split(' ')
+                #같은 taste_words에 여러가지 향이나 맛이 있는 경우가 있음 ex high_tannin, low_tannin
+                
+                for term in terms:
+                    if term in dict_of_tfidf_weightings.keys():
+                        #split으로 쪼갠 raw descriptor가 tfidf_weightings에 단어가 있으면 tfidf_weighting을 해당 가중치로 설정
+                        tfidf_weighting = dict_of_tfidf_weightings[term]
+
+                        try:
+                            word_vector = whiskey_word2vec_model.wv.get_vector(term).reshape(1,300)  #w2v 모델에서 vector를 변환한 것을 reshape
+                        except:
+                            word_vector = np.zeros(300)
+                        #reshape에서 에러가 난다고??
+                        weighted_word_vector = tfidf_weighting * word_vector     #scalar * vector
+                        weighted_review_terms.append(weighted_word_vector)
+                        descriptor_count += 1
+                        
+                    else:
+                        continue
+                try:
+                    review_vector = sum(weighted_review_terms)/len(weighted_review_terms)
+                    review_vector = review_vector[0]
+                except ZeroDivisionError as e:
+                    review_vector = np.nan
+                whiskey_review_vectors.append(review_vector)    #위의 결과를 append
+                whiskey_review_descriptors.append(terms)
+            
+            taste_vectors.append(whiskey_review_vectors)
+            taste_descriptors.append(whiskey_review_descriptors)
+
+        taste_vectors_t = list(map(list, zip(*taste_vectors)))
+        taste_descriptors_t = list(map(list, zip(*taste_descriptors)))
+
+        review_vecs_df = pd.DataFrame(taste_vectors_t, columns=core_tastes)     #Dataframe화
+
+        columns_taste_descriptors = [a + '_descriptors' for a in core_tastes]   
+        review_descriptors_df = pd.DataFrame(taste_descriptors_t, columns=columns_taste_descriptors)
+
+        whiskey_df_vecs = pd.concat([self.whiskey_df, review_descriptors_df, review_vecs_df], axis=1)
