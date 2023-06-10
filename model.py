@@ -55,3 +55,19 @@ class model:
             return normalized_sentence
         except:
             return ''
+    
+    def return_mapped_descriptor(self, word, mapping) -> str:
+        '''매핑된 csv를 사용하여 정규화하는 함수.'''
+        if word in list(mapping.index):
+            normalized_word = mapping.at[word, 'level_3']
+            return normalized_word
+        else:
+            return word
+    
+    def return_descriptor_from_mapping(self, descriptor_mapping, word, core_taste) -> str:
+        '''입력 받은 단어 word가 매핑 데이터에 있으면 해당 단어의 combined 반환, 아니면 none을 반환해주는 함수'''
+        if word in list(descriptor_mapping.index):
+            descriptor_to_return = descriptor_mapping['combined'][word]
+            return descriptor_to_return
+        else:
+            return None
