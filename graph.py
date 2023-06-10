@@ -142,3 +142,33 @@ class graph:
                 return label
             else:
                 continue
+
+    def main(self) -> None:
+        whiskey_variety_vectors = pd.read_csv('whiskey_aromas_nonaromas.csv', index_col='Unnamed: 0').reset_index().rename(columns={'index':'name'})
+        #파일 불러오기
+
+        whiskey_variety_vectors.loc[whiskey_variety_vectors['name'] == 'Laphroaig 1967 RWD, Laphroaig']
+        descriptor_frequencies = pd.read_csv('new_whiskey_variety_descriptors.csv').rename(columns={'Unnamed: 0':'name'})
+        for idx in range(len(descriptor_frequencies)):
+            for column in ['relative_frequency']:
+                tmp = ast.literal_eval(descriptor_frequencies[column][idx])
+                descriptor_frequencies[column][idx] = tmp
+
+        concat_whiskey_df = pd.merge(whiskey_variety_vectors, descriptor_frequencies, on='name').drop(columns=['aroma'])
+
+        whiskey_weights = {
+            # 'weight': {1: (0, 0.25), 2: (0.25, 0.45), 3: (0.45, 0.75), 4: (0.75, 1)},
+            'sweet': {1: (0, 0.25), 2: (0.25, 0.6), 3: (0.6, 0.75), 4: (0.75, 1)},
+            'acid': {1: (0, 0.05), 2: (0.05, 0.25), 3: (0.25, 0.5), 4: (0.5, 1)},
+            'salt': {1: (0, 0.15), 2: (0.15, 0.25), 3: (0.25, 0.7), 4: (0.7, 1)},
+            'piquant': {1: (0, 0.15), 2: (0.15, 0.3), 3: (0.3, 0.6), 4: (0.6, 1)},
+            'fat': {1: (0, 0.25), 2: (0.25, 0.5), 3: (0.5, 0.7), 4: (0.7, 1)},
+            'bitter': {1: (0, 0.2), 2: (0.2, 0.37), 3: (0.37, 0.6), 4: (0.6, 1)}
+        }   
+        self.whiskey_variety_vectors_normalized = concat_whiskey_df.copy()
+        for w, subdict in whiskey_weights.items():
+            self.whiskey_variety_vectors_normalized[w] = self.whiskey_variety_vectors_normalized[w].apply(lambda x: self.check_in_range(subdict, x))
+
+        self.whiskey_variety_vectors_normalized.sort_index(inplace=True)
+        concat_whiskey_df = pd.merge(whiskey_variety_vectors, descriptor_frequencies, on='name').drop(columns=['aroma'])
+        self.plot_whiskey_recommendations(self.whiskey_variety_vectors_normalized)
