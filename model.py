@@ -126,3 +126,49 @@ class model:
             min_value = df[feature_name].min()
             df[feature_name] = df[feature_name].apply(lambda x: (x- min_value)/(max_value-min_value))
         return df
+    
+    def main(self) -> None:
+        '''전처리된 whiskey_df를 향을최빈값, 바디감/맛을 1차원 값으로 변환'''
+        whiskey_review_data = list(self.whiskey_df['review_cask'])      #위스키 데이터프레임의 리뷰 정보들을 list로 변환
+
+        full_whiskey_reviews_list = [str(r) for r in whiskey_review_data]
+        full_whiskey_corpus = ' '.join(full_whiskey_reviews_list)             #전체 리뷰를 str로 join
+        whiskey_sentences_tokenized = sent_tokenize(full_whiskey_corpus) 
+        normalized_whiskey_sentences = []
+        
+        for s in whiskey_sentences_tokenized:      #whiskey tokenzied : 리뷰를 센텐스로 쪼갠 데이터(list)
+            normalized_text = self.normalize_text(s)
+            normalized_whiskey_sentences.append(normalized_text)
+        
+
+        whiskey_bigram_model = Phrases(normalized_whiskey_sentences, min_count=100)       #함께 자주 등장하는 단어를 인식해서 묶어줌(bigram)
+        whiskey_bigrams = [whiskey_bigram_model[line] for line in normalized_whiskey_sentences]  #적용
+        whiskey_trigram_model = Phrases(whiskey_bigrams, min_count=50)                    #다시 묶어서 trigram 으로 만듦
+        phrased_whiskey_sentences = [whiskey_trigram_model[line] for line in whiskey_bigrams]    #적용
+        whiskey_trigram_model.save('whiskey_trigrams.pkl')  #모델 저장
+        whiskey_trigram_model = Phraser.load('whiskey_trigrams.pkl')
+
+        descriptor_mapping = pd.read_csv('./mapping_data/concat_descriptor_mapping.csv', encoding='latin1').set_index('raw descriptor')
+
+        normalized_whiskey_sentences = []
+        for sent in phrased_whiskey_sentences:
+            normalized_whiskey_sentence = []
+            for word in sent:
+                normalized_word = self.return_mapped_descriptor(word, descriptor_mapping)
+                normalized_whiskey_sentence.append(str(normalized_word))
+            normalized_whiskey_sentences.append(normalized_whiskey_sentence)
+        #이렇게 해서 만들어진 normalized_wind_sentences에는 단어별로 쪼갠것을 매핑하여 다시 문장(리스트)로 변환됨
+        whiskey_reviews = list(self.whiskey_df['review_cask'])    #Description만 추출
+
+        descriptor_mapping = pd.read_csv('./mapping_data/concat_descriptor_mapping_tastes.csv', encoding='latin1').set_index('raw descriptor')
+
+        core_tastes = ['aroma', 'weight', 'sweet', 'acid', 'salt', 'piquant', 'fat', 'bitter']
+        descriptor_mappings = dict()
+        for c in core_tastes:
+            #매핑 데이터를 위의 core_tastes로 분류함
+            if c=='aroma':
+                descriptor_mapping_filtered=descriptor_mapping.loc[descriptor_mapping['type']=='aroma']
+            else:
+                descriptor_mapping_filtered=descriptor_mapping.loc[descriptor_mapping['primary taste']==c]
+            descriptor_mappings[c] = descriptor_mapping_filtered   
+
