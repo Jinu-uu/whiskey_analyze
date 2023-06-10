@@ -2,6 +2,7 @@ import crawler
 import mapping
 import preprocessing
 import model
+import graph
 import pandas as pd
 import os
 
@@ -26,3 +27,5 @@ if __name__ == '__main__':
     whiskey_df = preprocessing_process.main()
     main_model_process = model.model(whiskey_df)
     main_model_process.main()
+    graph_process = graph.graph(graph_num=4)
+    graph_process.main()
