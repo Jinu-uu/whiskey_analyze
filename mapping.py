@@ -104,3 +104,16 @@ class mapping:
             'primary taste':[np.NaN,np.NaN,np.NaN,'salt',np.NaN,'acid',np.NaN,np.NaN],
             'combined':['wine','pepper','grapefruit','salinity','spice','high_acid','berry','seaweed']
         })
+
+    def main(self) -> None:
+        '''전체적인 매핑 프로세스'''
+        self.folder_detect('./mapping')
+        self.distillery_mapping()
+        self.cask__mapping()
+        self.add_mapping()
+        descriptor_mapping_tastes = pd.read_csv('./mapping_data/descriptor_mapping_tastes.csv', encoding='latin1')
+        descriptor_mapping = pd.read_csv('./mapping_data/descriptor_mapping.csv', encoding='latin1')
+        concat_descriptor_mapping_tastes = pd.concat([descriptor_mapping_tastes, self.add_descriptor_mapping_tastes]).reset_index().drop(columns=['index'])
+        concat_descriptor_mapping = pd.concat([descriptor_mapping, self.add_descriptor_mapping]).reset_index().drop(columns=['index'])
+        concat_descriptor_mapping_tastes.to_csv('./mapping_data/concat_descriptor_mapping_tastes.csv')
+        concat_descriptor_mapping.to_csv('./mapping_data/concat_descriptor_mapping.csv')
