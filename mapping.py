@@ -84,3 +84,23 @@ class mapping:
         casktype_mapping = casktype_mapping.reset_index().drop(columns=['index'])
         casktype_mapping = casktype_mapping.applymap(lambda x: x.lower() if isinstance(x, str) else x)
         casktype_mapping.to_csv('./mapping_data/mapping_casktype.csv', index=False)
+
+    def add_mapping(self) -> None:
+        '''기존의 매핑에서 매핑 추가'''
+        self.add_descriptor_mapping = pd.DataFrame({
+            'raw descriptor':['sherry','spiciness','raisins','sea','spices','acid','berri','seaweed'],
+            'level_3':['winely','spice','grapefruit','saline','spice','acid','berry','seaweed'],
+            'level_2':['wine','baking_spices','citrus_fruit','salinity','baking_spices','acid','fruit','sea'],
+            'level_1':['wine','spice','fruit','salinity','spice','acid','fruit','sea'],
+            'type':['aroma','aroma','aroma','aroma','aroma','nonaroma','aroma','aroma']
+        })
+
+        self.add_descriptor_mapping_tastes = pd.DataFrame({
+            'raw descriptor':['sherry','spiciness','raisins','sea','spices','acid','berri','seaweed'],
+            'level_3':['winely','spice','grapefruit','saline','spice','acid','berry','seaweed'],
+            'level_2':['wine','baking_spices','citrus_fruit','salinity','baking_spices','acid','fruit','sea'],
+            'level_1':['wine','spice','fruit','salinity','spice','acid','fruit','sea'],
+            'type':['aroma','aroma','aroma','aroma','aroma','nonaroma','aroma','aroma'],
+            'primary taste':[np.NaN,np.NaN,np.NaN,'salt',np.NaN,'acid',np.NaN,np.NaN],
+            'combined':['wine','pepper','grapefruit','salinity','spice','high_acid','berry','seaweed']
+        })
