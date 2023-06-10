@@ -1,5 +1,6 @@
 import crawler
 import mapping
+import preprocessing
 import pandas as pd
 import os
 
@@ -20,3 +21,5 @@ if __name__ == '__main__':
         
     mapping_process = mapping.mapping()
     mapping_process.main()
+    preprocessing_process = preprocessing.preprocessing()
+    whiskey_df = preprocessing_process.main()
