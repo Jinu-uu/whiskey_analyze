@@ -40,3 +40,21 @@ class preprocessing:
             text = text.replace(char, repl)
 
         return text
+    
+    def main(self):
+        self.jsontodf(self.whiskey_df, ['review','reviewer_name','reviewer_score'])
+        self.jsontodf(self.casktype_df, ['description'])
+
+        whiskey_df_copy = self.whiskey_df.copy()
+
+        whiskey_df_copy=whiskey_df_copy[['name','review', 'Category', 'Distillery', 'Casktype']]
+        whiskey_df_copy['concat_review'] = whiskey_df_copy['review'].apply(lambda x : '  '.join(x))
+        whiskey_df_copy.fillna('-', inplace=True)
+
+        whiskey_df_copy['Casktype']=whiskey_df_copy['Casktype'].apply(self.replace_german_spanish_chars)
+        whiskey_df_copy['Casktype']=whiskey_df_copy['Casktype'].apply(lambda x : x.lower().split(' '))
+        whiskey_df_copy['cask_list'] = whiskey_df_copy['Casktype'].apply(self.get_cask)
+        whiskey_df_copy['review_cask'] = whiskey_df_copy.apply(lambda row : row['concat_review']+' '+row['cask_list'], axis=1)
+        whiskey_df_copy['review_cask']=whiskey_df_copy['review_cask'].apply(self.replace_german_spanish_chars)
+
+        return whiskey_df_copy
