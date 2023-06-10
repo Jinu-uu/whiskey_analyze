@@ -250,3 +250,40 @@ class model:
         review_descriptors_df = pd.DataFrame(taste_descriptors_t, columns=columns_taste_descriptors)
 
         whiskey_df_vecs = pd.concat([self.whiskey_df, review_descriptors_df, review_vecs_df], axis=1)
+
+
+        # 모든 위스키에 걸쳐 와인 속성의 평균 임베딩을 가져옴
+        self.avg_taste_vecs = dict()
+        for t in core_tastes:
+            # 맛에 대한 descriptors가 있는 모든 위스키에 걸쳐 맛에 대한 평균 임베딩을 추출
+            review_arrays = whiskey_df_vecs[t].dropna()
+            average_taste_vec = np.average(review_arrays)
+            self.avg_taste_vecs[t] = average_taste_vec
+
+        #지역에 대해 정규화(이 때 지역은 증류소 기준)
+        normalized_geos = list(set(zip(whiskey_df_vecs['name'], whiskey_df_vecs['Distillery'])))
+
+        taste_dataframes = []
+
+        #향일 때
+        aroma_vec, aroma_descriptors = self.pca_wine_variety(normalized_geos, 'aroma', whiskey_df_vecs, pca=False)
+        taste_dataframes.append(aroma_vec)
+    
+        #향이 아닐 떄
+        for tw in core_tastes[1:]:
+            pca_w_dataframe, nonaroma_descriptors = self.pca_wine_variety(normalized_geos, tw, whiskey_df_vecs, pca=True)
+            taste_dataframes.append(pca_w_dataframe)
+            
+        # combine all the dataframes created above into one 
+        all_nonaromas = pd.concat(taste_dataframes, axis=1)
+        all_nonaromas.columns = core_tastes
+
+        relative_frequency = aroma_descriptors.apply(lambda row: [val for val in row if val is not None], axis=1)
+
+        #향의 최빈값에 대한 데이터프레임
+        aroma_descriptors = pd.DataFrame({'relative_frequency': relative_frequency})
+        aroma_descriptors.to_csv('new_whiskey_variety_descriptors.csv')
+
+        #결과는 이름+300개의 벡터를 pca로 차원축소한 하나의 float 값으로 이루어진 6가지 맛 + 바디감으로 구성
+        all_nonaromas_normalized = self.normalize(all_nonaromas, cols_to_normalize=core_tastes[1:])
+        all_nonaromas_normalized.to_csv('whiskey_aromas_nonaromas.csv')
