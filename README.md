@@ -43,21 +43,22 @@
 <h1>실행 방법</h1>
 
 >git clone https://github.com/Jinu-uu/whiskey_analyze.git  
+>cd whiskey_analyze  
 >pip install requirements.txt  
 >python main.py
 
 <h1>스택 및 라이브러리</h1>
 
->window10  
->conda  
->vscode  
->python 3.8    
->라이브러리는 requirements.txt 참조  
+- window10  
+- conda  
+- vscode  
+- python 3.8    
+- 라이브러리는 requirements.txt 참조  
 
 
 <h3>주의사항</h3>
 
->conda 환경에서 코드를 테스트해본 것이여서 바닐라 파이썬 환경에서 실행시 오류가날 수 있습니다.  
->이때는 conda의 가상환경 설치시 기본으로 깔리는 라이브러리를 추가적으로 설치하면 오류가 나지 않습니다.  
->whiskey base의 프론트 element이 바뀌어서, 오류가 나는 것을 대비해 크롤링한 데이터를 data 폴더에 넣어주었습니다.  
->pip install requirements.txt가 안된다면 pip 대신 !pip을 사용하시길 바랍니다.
+- conda 환경에서 코드를 테스트해본 것이여서 바닐라 파이썬 환경에서 실행시 오류가날 수 있습니다.  
+- 이때는 conda의 가상환경 설치시 기본으로 깔리는 라이브러리를 추가적으로 설치하면 오류가 나지 않습니다.  
+- whiskey base의 프론트 element이 바뀌어서, 오류가 나는 것을 대비해 크롤링한 데이터를 data 폴더에 넣어주었습니다.  
+- pip install requirements.txt가 안된다면 pip 대신 !pip을 사용하시길 바랍니다.
